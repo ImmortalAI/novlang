@@ -6,6 +6,7 @@ const ESCAPABLE = new Set(["*", "\\", "[", "]", "!"]);
 type RawItem =
   | { kind: "text"; value: string }
   | { kind: "image"; alt: string; src: string }
+  | { kind: "footnoteRef"; id: string; offset: number }
   | { kind: "delim"; count: number; canOpen: boolean; canClose: boolean; offset: number };
 
 // Brackets inside the alt text are not supported in v1: `![a[b]c](x.png)` stays literal.
@@ -63,6 +64,15 @@ function tokenize(text: string): RawItem[] {
         continue;
       }
     }
+    if (ch === "[" && text[i + 1] === "^") {
+      const match = /^\[\^([^\]]+)\]/.exec(text.slice(i));
+      if (match) {
+        flush();
+        items.push({ kind: "footnoteRef", id: match[1], offset: i });
+        i += match[0].length;
+        continue;
+      }
+    }
     if (ch === "*") {
       const start = i;
       let count = 0;
@@ -112,7 +122,8 @@ function resolveDelimiters(
   items: RawItem[],
   startLine: number,
   text: string,
-  diagnostics: Diagnostic[]
+  diagnostics: Diagnostic[],
+  footnoteIds: Set<string>
 ): InlineNode[] {
   const output: InlineNode[] = [];
   const stack: OpenDelim[] = [];
@@ -126,6 +137,19 @@ function resolveDelimiters(
 
     if (item.kind === "image") {
       output.push({ type: "image", alt: item.alt, src: item.src });
+      continue;
+    }
+
+    if (item.kind === "footnoteRef") {
+      const resolved = footnoteIds.has(item.id);
+      if (!resolved) {
+        diagnostics.push({
+          severity: "warning",
+          message: `Footnote reference "^${item.id}" has no matching definition`,
+          position: computePosition(startLine, text, item.offset),
+        });
+      }
+      output.push({ type: "footnoteRef", id: item.id, resolved });
       continue;
     }
 
@@ -179,7 +203,8 @@ function resolveDelimiters(
 export function parseInline(
   text: string,
   startLine: number,
-  diagnostics: Diagnostic[]
+  diagnostics: Diagnostic[],
+  footnoteIds: Set<string>
 ): InlineNode[] {
-  return resolveDelimiters(tokenize(text), startLine, text, diagnostics);
+  return resolveDelimiters(tokenize(text), startLine, text, diagnostics, footnoteIds);
 }

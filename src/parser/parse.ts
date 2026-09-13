@@ -21,12 +21,14 @@ export function parse(source: string): ParseResult {
     footnoteDefsById.set(id, block);
   }
 
+  const footnoteIds = new Set(footnoteDefsById.keys());
+
   const children: BlockNode[] = [];
   for (const block of rawBlocks) {
     if (block.kind === "heading") {
       children.push({
         type: "heading",
-        children: parseInline(block.text, block.startLine, diagnostics),
+        children: parseInline(block.text, block.startLine, diagnostics, footnoteIds),
       });
     } else if (block.kind === "sceneBreak") {
       children.push({ type: "sceneBreak" });
@@ -35,7 +37,7 @@ export function parse(source: string): ParseResult {
         type: "blockquote",
         children: (block.quoteParagraphs ?? []).map((p) => ({
           type: "paragraph" as const,
-          children: parseInline(p.text, p.startLine, diagnostics),
+          children: parseInline(p.text, p.startLine, diagnostics, footnoteIds),
         })),
       });
     } else if (block.kind === "footnoteDef") {
@@ -47,17 +49,23 @@ export function parse(source: string): ParseResult {
         children: [
           {
             type: "paragraph",
-            children: parseInline(block.text, block.startLine, diagnostics),
+            children: parseInline(block.text, block.startLine, diagnostics, footnoteIds),
           },
         ],
       });
     } else {
       children.push({
         type: "paragraph",
-        children: parseInline(block.text, block.startLine, diagnostics),
+        children: parseInline(block.text, block.startLine, diagnostics, footnoteIds),
       });
     }
   }
+
+  diagnostics.sort(
+    (a, b) =>
+      (a.position?.line ?? 0) - (b.position?.line ?? 0) ||
+      (a.position?.column ?? 0) - (b.position?.column ?? 0)
+  );
 
   return { document: { type: "document", children }, diagnostics };
 }
