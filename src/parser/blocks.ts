@@ -84,7 +84,13 @@ export function splitIntoRawBlocks(source: string): RawBlock[] {
       const startLine = i + 1;
       const chunkLines = [footnoteMatch[2]];
       i++;
-      while (i < lines.length && !isBlank(lines[i])) {
+      while (
+        i < lines.length &&
+        !isBlank(lines[i]) &&
+        !isSceneBreak(lines[i]) &&
+        !isQuoteLine(lines[i]) &&
+        !FOOTNOTE_DEF_RE.test(lines[i])
+      ) {
         chunkLines.push(lines[i]);
         i++;
       }

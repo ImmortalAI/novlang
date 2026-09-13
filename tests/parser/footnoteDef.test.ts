@@ -27,6 +27,23 @@ describe("footnoteDef", () => {
     ]);
   });
 
+  it("keeps back-to-back definitions separate with no blank line between them", () => {
+    const { document, diagnostics } = parse("[^1]: Note one.\n[^2]: Note two.");
+    expect(diagnostics).toEqual([]);
+    expect(document.children).toEqual([
+      {
+        type: "footnoteDef",
+        id: "1",
+        children: [{ type: "paragraph", children: [{ type: "text", value: "Note one." }] }],
+      },
+      {
+        type: "footnoteDef",
+        id: "2",
+        children: [{ type: "paragraph", children: [{ type: "text", value: "Note two." }] }],
+      },
+    ]);
+  });
+
   it("warns on a duplicate footnote id and keeps the first occurrence", () => {
     const { document, diagnostics } = parse("[^1]: first text\n\n[^1]: second text");
     expect(document.children).toHaveLength(1);
