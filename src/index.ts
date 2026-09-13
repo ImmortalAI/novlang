@@ -8,3 +8,5 @@ export type {
   RenderOptions,
   ParseResult,
 } from "./types";
+
+export { parse } from "./parser/parse";
