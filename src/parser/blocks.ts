@@ -1,5 +1,5 @@
 export interface RawBlock {
-  kind: "heading" | "paragraph";
+  kind: "heading" | "sceneBreak" | "paragraph";
   text: string;
   startLine: number;
 }
@@ -8,8 +8,12 @@ function isBlank(line: string): boolean {
   return line.trim() === "";
 }
 
+function isSceneBreak(line: string): boolean {
+  return line.trim() === "***";
+}
+
 export function splitIntoRawBlocks(source: string): RawBlock[] {
-  const lines = source.split("\n");
+  const lines = source.split(/\r?\n/);
   const blocks: RawBlock[] = [];
   let i = 0;
 
@@ -27,9 +31,14 @@ export function splitIntoRawBlocks(source: string): RawBlock[] {
       i++;
       continue;
     }
+    if (isSceneBreak(lines[i])) {
+      blocks.push({ kind: "sceneBreak", text: "", startLine: i + 1 });
+      i++;
+      continue;
+    }
     const startLine = i + 1;
     const chunkLines: string[] = [];
-    while (i < lines.length && !isBlank(lines[i])) {
+    while (i < lines.length && !isBlank(lines[i]) && !isSceneBreak(lines[i])) {
       chunkLines.push(lines[i]);
       i++;
     }

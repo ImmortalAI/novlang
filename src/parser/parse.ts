@@ -12,6 +12,8 @@ export function parse(source: string): ParseResult {
         type: "heading",
         children: [{ type: "text", value: block.text }],
       });
+    } else if (block.kind === "sceneBreak") {
+      children.push({ type: "sceneBreak" });
     } else {
       children.push({
         type: "paragraph",
