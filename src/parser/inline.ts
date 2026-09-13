@@ -8,6 +8,33 @@ type RawItem =
   | { kind: "image"; alt: string; src: string }
   | { kind: "delim"; count: number; canOpen: boolean; canClose: boolean; offset: number };
 
+// Brackets inside the alt text are not supported in v1: `![a[b]c](x.png)` stays literal.
+function matchImage(
+  text: string,
+  start: number
+): { alt: string; src: string; length: number } | null {
+  const head = /^!\[([^\]]*)\]\(/.exec(text.slice(start));
+  if (!head) return null;
+  const srcStart = start + head[0].length;
+  let depth = 1;
+  for (let i = srcStart; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === "(") {
+      depth++;
+    } else if (ch === ")") {
+      depth--;
+      if (depth === 0) {
+        return {
+          alt: head[1],
+          src: text.slice(srcStart, i),
+          length: i + 1 - start,
+        };
+      }
+    }
+  }
+  return null;
+}
+
 function tokenize(text: string): RawItem[] {
   const items: RawItem[] = [];
   let buffer = "";
@@ -28,11 +55,11 @@ function tokenize(text: string): RawItem[] {
       continue;
     }
     if (ch === "!" && text[i + 1] === "[") {
-      const match = /^!\[([^\]]*)\]\(([^)]*)\)/.exec(text.slice(i));
-      if (match) {
+      const image = matchImage(text, i);
+      if (image) {
         flush();
-        items.push({ kind: "image", alt: match[1], src: match[2] });
-        i += match[0].length;
+        items.push({ kind: "image", alt: image.alt, src: image.src });
+        i += image.length;
         continue;
       }
     }

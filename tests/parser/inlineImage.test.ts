@@ -37,4 +37,35 @@ describe("inline image", () => {
       { type: "paragraph", children: [{ type: "text", value: "![broken" }] },
     ]);
   });
+
+  it("keeps balanced parentheses inside the src", () => {
+    const { document } = parse("![Снимок](Снимок экрана (3).png)");
+    expect(document.children).toEqual([
+      {
+        type: "paragraph",
+        children: [{ type: "image", alt: "Снимок", src: "Снимок экрана (3).png" }],
+      },
+    ]);
+  });
+
+  it("keeps two images on one line independent", () => {
+    const { document } = parse("![a](x.png) and ![b](y.png)");
+    expect(document.children).toEqual([
+      {
+        type: "paragraph",
+        children: [
+          { type: "image", alt: "a", src: "x.png" },
+          { type: "text", value: " and " },
+          { type: "image", alt: "b", src: "y.png" },
+        ],
+      },
+    ]);
+  });
+
+  it("leaves an unbalanced parenthesis in the src literal", () => {
+    const { document } = parse("![alt](unclosed.png");
+    expect(document.children).toEqual([
+      { type: "paragraph", children: [{ type: "text", value: "![alt](unclosed.png" }] },
+    ]);
+  });
 });
