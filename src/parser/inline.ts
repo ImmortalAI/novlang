@@ -5,6 +5,7 @@ const ESCAPABLE = new Set(["*", "\\", "[", "]", "!"]);
 
 type RawItem =
   | { kind: "text"; value: string }
+  | { kind: "image"; alt: string; src: string }
   | { kind: "delim"; count: number; canOpen: boolean; canClose: boolean; offset: number };
 
 function tokenize(text: string): RawItem[] {
@@ -25,6 +26,15 @@ function tokenize(text: string): RawItem[] {
       buffer += text[i + 1];
       i += 2;
       continue;
+    }
+    if (ch === "!" && text[i + 1] === "[") {
+      const match = /^!\[([^\]]*)\]\(([^)]*)\)/.exec(text.slice(i));
+      if (match) {
+        flush();
+        items.push({ kind: "image", alt: match[1], src: match[2] });
+        i += match[0].length;
+        continue;
+      }
     }
     if (ch === "*") {
       const start = i;
@@ -84,6 +94,11 @@ function resolveDelimiters(
   for (const item of items) {
     if (item.kind === "text") {
       output.push({ type: "text", value: item.value });
+      continue;
+    }
+
+    if (item.kind === "image") {
+      output.push({ type: "image", alt: item.alt, src: item.src });
       continue;
     }
 
