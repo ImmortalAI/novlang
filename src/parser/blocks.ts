@@ -1,9 +1,12 @@
 export interface RawBlock {
-  kind: "heading" | "sceneBreak" | "blockquote" | "paragraph";
+  kind: "heading" | "sceneBreak" | "blockquote" | "footnoteDef" | "paragraph";
   text: string;
   startLine: number;
   quoteParagraphs?: { text: string; startLine: number }[];
+  footnoteId?: string;
 }
+
+const FOOTNOTE_DEF_RE = /^\[\^([^\]]+)\]:\s?(.*)$/;
 
 function isBlank(line: string): boolean {
   return line.trim() === "";
@@ -76,13 +79,31 @@ export function splitIntoRawBlocks(source: string): RawBlock[] {
       blocks.push({ kind: "blockquote", text: "", startLine, quoteParagraphs });
       continue;
     }
+    const footnoteMatch = FOOTNOTE_DEF_RE.exec(lines[i]);
+    if (footnoteMatch) {
+      const startLine = i + 1;
+      const chunkLines = [footnoteMatch[2]];
+      i++;
+      while (i < lines.length && !isBlank(lines[i])) {
+        chunkLines.push(lines[i]);
+        i++;
+      }
+      blocks.push({
+        kind: "footnoteDef",
+        text: chunkLines.join("\n"),
+        startLine,
+        footnoteId: footnoteMatch[1],
+      });
+      continue;
+    }
     const startLine = i + 1;
     const chunkLines: string[] = [];
     while (
       i < lines.length &&
       !isBlank(lines[i]) &&
       !isSceneBreak(lines[i]) &&
-      !isQuoteLine(lines[i])
+      !isQuoteLine(lines[i]) &&
+      !FOOTNOTE_DEF_RE.test(lines[i])
     ) {
       chunkLines.push(lines[i]);
       i++;
