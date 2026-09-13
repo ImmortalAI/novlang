@@ -1,7 +1,8 @@
 export interface RawBlock {
-  kind: "heading" | "sceneBreak" | "paragraph";
+  kind: "heading" | "sceneBreak" | "blockquote" | "paragraph";
   text: string;
   startLine: number;
+  quoteParagraphs?: { text: string; startLine: number }[];
 }
 
 function isBlank(line: string): boolean {
@@ -10,6 +11,18 @@ function isBlank(line: string): boolean {
 
 function isSceneBreak(line: string): boolean {
   return line.trim() === "***";
+}
+
+function isQuoteLine(line: string): boolean {
+  return line.startsWith(">");
+}
+
+function isQuoteBlankLine(line: string): boolean {
+  return line.trim() === ">";
+}
+
+function stripQuoteMarker(line: string): string {
+  return line.replace(/^>\s?/, "");
 }
 
 export function splitIntoRawBlocks(source: string): RawBlock[] {
@@ -36,9 +49,41 @@ export function splitIntoRawBlocks(source: string): RawBlock[] {
       i++;
       continue;
     }
+    if (isQuoteLine(lines[i])) {
+      const startLine = i + 1;
+      const quoteLines: { line: string; lineNo: number }[] = [];
+      while (i < lines.length && isQuoteLine(lines[i])) {
+        quoteLines.push({ line: lines[i], lineNo: i + 1 });
+        i++;
+      }
+      const quoteParagraphs: { text: string; startLine: number }[] = [];
+      let current: string[] = [];
+      let currentStart = startLine;
+      for (const { line, lineNo } of quoteLines) {
+        if (isQuoteBlankLine(line)) {
+          if (current.length > 0) {
+            quoteParagraphs.push({ text: current.join("\n"), startLine: currentStart });
+            current = [];
+          }
+          continue;
+        }
+        if (current.length === 0) currentStart = lineNo;
+        current.push(stripQuoteMarker(line));
+      }
+      if (current.length > 0) {
+        quoteParagraphs.push({ text: current.join("\n"), startLine: currentStart });
+      }
+      blocks.push({ kind: "blockquote", text: "", startLine, quoteParagraphs });
+      continue;
+    }
     const startLine = i + 1;
     const chunkLines: string[] = [];
-    while (i < lines.length && !isBlank(lines[i]) && !isSceneBreak(lines[i])) {
+    while (
+      i < lines.length &&
+      !isBlank(lines[i]) &&
+      !isSceneBreak(lines[i]) &&
+      !isQuoteLine(lines[i])
+    ) {
       chunkLines.push(lines[i]);
       i++;
     }

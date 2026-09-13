@@ -14,6 +14,14 @@ export function parse(source: string): ParseResult {
       });
     } else if (block.kind === "sceneBreak") {
       children.push({ type: "sceneBreak" });
+    } else if (block.kind === "blockquote") {
+      children.push({
+        type: "blockquote",
+        children: (block.quoteParagraphs ?? []).map((p) => ({
+          type: "paragraph" as const,
+          children: [{ type: "text" as const, value: p.text }],
+        })),
+      });
     } else {
       children.push({
         type: "paragraph",
