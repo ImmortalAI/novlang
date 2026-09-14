@@ -2,6 +2,28 @@
   "name": "novlang",
   "version": "0.1.0",
   "description": "Markup language and parser/renderer library for novel chapter text",
+  "keywords": [
+    "novel",
+    "markup",
+    "parser",
+    "ast",
+    "markdown",
+    "renderer",
+    "epub",
+    "xhtml",
+    "fiction",
+    "writing"
+  ],
+  "author": "ImmortalAI",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ImmortalAI/novlang.git"
+  },
+  "homepage": "https://github.com/ImmortalAI/novlang#readme",
+  "bugs": {
+    "url": "https://github.com/ImmortalAI/novlang/issues"
+  },
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -30,7 +52,6 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
-  "license": "MIT",
   "devDependencies": {
     "@types/node": "^22.0.0",
     "tsup": "^8.3.0",
