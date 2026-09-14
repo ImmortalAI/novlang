@@ -1,0 +1,31 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`full chapter integration > renders the full chapter to HTML 1`] = `
+"<h1>Глава 12. Пробуждение</h1>
+<p>Он открыл глаза. <em>Тихо,</em> — подумал он, — <strong>слишком тихо</strong>.</p>
+<blockquote>
+<p>Дорогой читатель,</p>
+<p>прости меня.</p>
+</blockquote>
+<p class="novlang-scene-break">⁘</p>
+<p>Через миг всё изменилось.<sup><a href="#fn-1">1</a></sup></p>
+<p><img src="images/ch12.png" alt="Иллюстрация"></p>
+<div class="footnote-def" id="fn-1">
+<p>Или так ему показалось.</p>
+</div>"
+`;
+
+exports[`full chapter integration > renders the full chapter to XHTML 1`] = `
+"<h1>Глава 12. Пробуждение</h1>
+<p>Он открыл глаза. <em>Тихо,</em> — подумал он, — <strong>слишком тихо</strong>.</p>
+<blockquote>
+<p>Дорогой читатель,</p>
+<p>прости меня.</p>
+</blockquote>
+<p class="novlang-scene-break">⁘</p>
+<p>Через миг всё изменилось.<sup><a epub:type="noteref" href="#fn-1">1</a></sup></p>
+<p><img src="images/ch12.png" alt="Иллюстрация"/></p>
+<aside epub:type="footnote" id="fn-1">
+<p>Или так ему показалось.</p>
+</aside>"
+`;
