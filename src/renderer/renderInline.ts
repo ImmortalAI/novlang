@@ -9,13 +9,20 @@ export function renderInlineNode(node: InlineNode, options: RenderOptions): stri
       return `<em>${renderInlineNodes(node.children, options)}</em>`;
     case "strong":
       return `<strong>${renderInlineNodes(node.children, options)}</strong>`;
-    case "image":
-      return `<img src="${escapeAttr(node.src)}" alt="${escapeAttr(node.alt)}">`;
-    case "footnoteRef":
+    case "image": {
+      const attrs = `src="${escapeAttr(node.src)}" alt="${escapeAttr(node.alt)}"`;
+      return options.xhtmlMode ? `<img ${attrs}/>` : `<img ${attrs}>`;
+    }
+    case "footnoteRef": {
       if (!node.resolved) {
         return `<sup>[${escapeHtml(node.id)}]</sup>`;
       }
-      return `<sup><a href="#fn-${escapeAttr(node.id)}">${escapeHtml(node.id)}</a></sup>`;
+      const href = `href="#fn-${escapeAttr(node.id)}"`;
+      const label = escapeHtml(node.id);
+      return options.xhtmlMode
+        ? `<sup><a epub:type="noteref" ${href}>${label}</a></sup>`
+        : `<sup><a ${href}>${label}</a></sup>`;
+    }
   }
 }
 
