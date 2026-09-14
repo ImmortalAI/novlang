@@ -10,3 +10,4 @@ export type {
 } from "./types";
 
 export { parse } from "./parser/parse";
+export { renderToHTML } from "./renderer/renderToHTML";
