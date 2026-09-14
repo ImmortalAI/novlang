@@ -96,9 +96,13 @@ yourself:
 ```
 
 Readers capable of popup footnotes also render the `<aside>` inline in the flow
-unless it is hidden, so without this rule the footnote text appears twice:
+unless it is hidden, so without this rule the footnote text appears twice. The
+`@namespace` line is required — a namespaced selector without it is invalid, and
+the reading system silently drops the rule:
 
 ```css
+@namespace epub url("http://www.idpf.org/2007/ops");
+
 aside[epub|type~="footnote"] {
   display: none;
 }
