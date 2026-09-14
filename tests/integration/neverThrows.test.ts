@@ -29,15 +29,36 @@ const ADVERSARIAL_INPUTS = [
   "*x ".repeat(500) + "y" + " x*".repeat(500),
 ];
 
+function label(input: string): string {
+  return input.length > 24
+    ? `${JSON.stringify(input.slice(0, 20))}…(${input.length} chars)`
+    : JSON.stringify(input);
+}
+
 describe("never throws on malformed input", () => {
   for (const input of ADVERSARIAL_INPUTS) {
-    it(`does not throw for: ${JSON.stringify(input)}`, () => {
+    it(`handles ${label(input)}`, () => {
+      let html = "";
+      let xhtml = "";
       expect(() => {
         const { document, diagnostics } = parse(input);
         expect(Array.isArray(diagnostics)).toBe(true);
-        renderToHTML(document);
-        renderToHTML(document, { xhtmlMode: true });
+        html = renderToHTML(document);
+        xhtml = renderToHTML(document, { xhtmlMode: true });
       }).not.toThrow();
+
+      // A floor against silent data loss, not a proof of it. Crash-safety alone
+      // would let a regression that vaporised the writer's text pass this whole
+      // suite, and never losing typed text is the library's central promise. The
+      // real content guarantees live in the unit tests and the chapter snapshot;
+      // this only asserts that letters and digits present in the input still
+      // appear in both renderings. It is deliberately vacuous for the
+      // pure-syntax inputs, where no character's survival is guaranteed —
+      // asterisks legitimately disappear by becoming <em>/<strong> tags.
+      for (const ch of new Set(input.match(/[\p{L}\p{N}]/gu) ?? [])) {
+        expect(html).toContain(ch);
+        expect(xhtml).toContain(ch);
+      }
     });
   }
 });
