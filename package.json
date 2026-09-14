@@ -1,6 +1,6 @@
 {
   "name": "novlang-js",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Markup language and parser/renderer library for novel chapter text",
   "keywords": [
     "novel",
@@ -40,7 +40,9 @@
       }
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "sideEffects": false,
   "engines": {
     "node": ">=18"
