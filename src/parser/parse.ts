@@ -13,7 +13,7 @@ export function parse(source: string): ParseResult {
     if (footnoteDefsById.has(id)) {
       diagnostics.push({
         severity: "warning",
-        message: `Duplicate footnote definition for "^${id}"; using the first occurrence`,
+        message: `Duplicate footnote definition for "^${id}"; the first one is used and this text is kept as a paragraph`,
         position: { line: block.startLine, column: 1 },
       });
       continue;
@@ -41,8 +41,17 @@ export function parse(source: string): ParseResult {
         })),
       });
     } else if (block.kind === "footnoteDef") {
-      // A duplicate id was already diagnosed above; only the winning block is emitted.
-      if (footnoteDefsById.get(block.footnoteId!) !== block) continue;
+      // A duplicate id was already diagnosed above. The losing definition keeps its
+      // text as a paragraph rather than vanishing — this library never discards what
+      // the writer typed. It must not become a second footnoteDef: two elements with
+      // id="fn-1" is invalid HTML and an epubcheck duplicate-ID error.
+      if (footnoteDefsById.get(block.footnoteId!) !== block) {
+        children.push({
+          type: "paragraph",
+          children: parseInline(block.text, block.startLine, diagnostics, footnoteIds),
+        });
+        continue;
+      }
       children.push({
         type: "footnoteDef",
         id: block.footnoteId!,

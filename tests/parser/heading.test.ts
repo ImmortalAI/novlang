@@ -15,6 +15,22 @@ describe("heading", () => {
     const { document } = parse("first paragraph\n\n# not a heading");
     expect(document.children.every((b) => b.type !== "heading")).toBe(true);
   });
+
+  it("finds the heading after a byte-order mark", () => {
+    const { document } = parse("﻿# Глава 1\n\nТекст.");
+    expect(document.children[0]).toEqual({
+      type: "heading",
+      children: [{ type: "text", value: "Глава 1" }],
+    });
+  });
+
+  it("finds the heading after leading blank lines", () => {
+    const { document } = parse("\n\n# Глава 1\n\nТекст.");
+    expect(document.children[0]).toEqual({
+      type: "heading",
+      children: [{ type: "text", value: "Глава 1" }],
+    });
+  });
 });
 
 describe("paragraph", () => {

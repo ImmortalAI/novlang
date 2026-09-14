@@ -1,5 +1,5 @@
 import type { InlineNode, RenderOptions } from "../types";
-import { escapeAttr, escapeHtml } from "./escape";
+import { escapeAttr, escapeHtml, footnoteAnchor } from "./escape";
 
 export function renderInlineNode(node: InlineNode, options: RenderOptions): string {
   switch (node.type) {
@@ -17,7 +17,7 @@ export function renderInlineNode(node: InlineNode, options: RenderOptions): stri
       if (!node.resolved) {
         return `<sup>[${escapeHtml(node.id)}]</sup>`;
       }
-      const href = `href="#fn-${escapeAttr(node.id)}"`;
+      const href = `href="${escapeAttr(`#${footnoteAnchor(node.id)}`)}"`;
       const label = escapeHtml(node.id);
       return options.xhtmlMode
         ? `<sup><a epub:type="noteref" ${href}>${label}</a></sup>`

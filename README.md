@@ -41,6 +41,10 @@ the writer keeps typing.
 | Paragraphs | separated by a blank line |
 | Escaping | `\` before `*`, `[`, `]`, `!`, or `\` |
 
+`\` escapes only `*`, `[`, `]`, `!` and `\`; before any other character it is not
+an escape and the backslash appears in the output, so `\>` renders a visible
+backslash.
+
 ### Emphasis edge cases
 
 Emphasis and strong nest as you would expect when the markers are separated by
@@ -67,6 +71,41 @@ The consuming XHTML document must declare the namespace on its root element:
 
 Book-level metadata (title, author, cover, chapter order) is out of scope —
 that belongs to the consuming application's book manifest.
+
+## Styling the output
+
+The renderer emits structural markup only; the consuming application supplies the
+CSS. The elements worth targeting:
+
+| Element | HTML mode | XHTML mode |
+|---|---|---|
+| Scene break | `<p class="novlang-scene-break">` | `<p class="novlang-scene-break">` |
+| Footnote definition | `<div class="footnote-def">` | `<aside epub:type="footnote">` (no class) |
+
+The footnote definition carries no class in XHTML mode, so a live preview and an
+EPUB stylesheet need different selectors to reach it.
+
+The scene break is rendered as a single ornament character; it only reads as the
+centred ornament `parser.md` calls a "центрированный орнамент" once you centre it
+yourself:
+
+```css
+.novlang-scene-break {
+  text-align: center;
+}
+```
+
+Readers capable of popup footnotes also render the `<aside>` inline in the flow
+unless it is hidden, so without this rule the footnote text appears twice:
+
+```css
+aside[epub|type~="footnote"] {
+  display: none;
+}
+```
+
+Footnote definitions render without a visible number or back-link, on the
+assumption that a popup-capable reading system supplies that affordance itself.
 
 ## License
 

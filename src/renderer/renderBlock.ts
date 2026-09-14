@@ -1,5 +1,5 @@
 import type { BlockNode, RenderOptions } from "../types";
-import { escapeAttr } from "./escape";
+import { escapeAttr, footnoteAnchor } from "./escape";
 import { renderInlineNodes } from "./renderInline";
 
 export function renderBlockNode(node: BlockNode, options: RenderOptions): string {
@@ -14,10 +14,10 @@ export function renderBlockNode(node: BlockNode, options: RenderOptions): string
       return `<blockquote>\n${renderBlockNodes(node.children, options)}\n</blockquote>`;
     case "footnoteDef": {
       const body = renderBlockNodes(node.children, options);
-      const id = escapeAttr(node.id);
+      const id = escapeAttr(footnoteAnchor(node.id));
       return options.xhtmlMode
-        ? `<aside epub:type="footnote" id="fn-${id}">\n${body}\n</aside>`
-        : `<div class="footnote-def" id="fn-${id}">\n${body}\n</div>`;
+        ? `<aside epub:type="footnote" id="${id}">\n${body}\n</aside>`
+        : `<div class="footnote-def" id="${id}">\n${body}\n</div>`;
     }
   }
 }

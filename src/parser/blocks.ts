@@ -29,17 +29,21 @@ function stripQuoteMarker(line: string): string {
 }
 
 export function splitIntoRawBlocks(source: string): RawBlock[] {
-  const lines = source.split(/\r?\n/);
+  // A leading BOM is what Windows editors and many .md/.txt exporters write, and a
+  // pasted chapter often starts with a blank line. Neither should cost the writer
+  // their chapter title.
+  const lines = source.replace(/^﻿/, "").split(/\r?\n/);
   const blocks: RawBlock[] = [];
   let i = 0;
 
-  if (lines.length > 0 && /^#\s+/.test(lines[0])) {
+  while (i < lines.length && isBlank(lines[i])) i++;
+  if (i < lines.length && /^#\s+/.test(lines[i])) {
     blocks.push({
       kind: "heading",
-      text: lines[0].replace(/^#\s+/, ""),
-      startLine: 1,
+      text: lines[i].replace(/^#\s+/, ""),
+      startLine: i + 1,
     });
-    i = 1;
+    i++;
   }
 
   while (i < lines.length) {
