@@ -1,4 +1,4 @@
-# novlang
+# novlang-js
 
 Markup language and parser/renderer library for novel chapter text.
 One NovLang document is one chapter.
@@ -6,13 +6,13 @@ One NovLang document is one chapter.
 ## Install
 
 ```sh
-pnpm install novlang
+pnpm install novlang-js
 ```
 
 ## Usage
 
 ```ts
-import { parse, renderToHTML } from "novlang";
+import { parse, renderToHTML } from "novlang-js";
 
 const { document, diagnostics } = parse(source);
 

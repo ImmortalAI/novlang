@@ -1,5 +1,5 @@
 {
-  "name": "novlang",
+  "name": "novlang-js",
   "version": "0.1.0",
   "description": "Markup language and parser/renderer library for novel chapter text",
   "keywords": [
@@ -50,7 +50,8 @@
     "build": "tsup",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm typecheck && pnpm test && pnpm build"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
